@@ -74,12 +74,7 @@ const debug = console.debug;
         :key="info.id"
         :info="info"
         @mouseover="unflip(idx)"
-        @touchmove="
-          (e) => {
-            e.preventDefault();
-            unflip(idx);
-          }
-        "
+        @click="unflip(idx)"
         v-show="started"
       />
     </div>
