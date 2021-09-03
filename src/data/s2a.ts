@@ -15,7 +15,7 @@ export default [
   { id: 14, name: { zh: "孫嘉豪", en: "Billy" } },
   { id: 15, name: { zh: "張鎮揚", en: "Terry" } },
   { id: 16, name: { zh: "梁僑丹", en: "Joan" } },
-  { id: 17, name: { zh: "陳卓恒", en: "Sam" } },
+  { id: 17, name: { zh: "陳卓恒", en: "Dicky" } },
   { id: 18, name: { zh: "陳涌興", en: "Manson" } },
   { id: 19, name: { zh: "陳靜妍", en: "Candice" } },
   { id: 20, name: { zh: "馮雅詩", en: "Rebecca" } },
