@@ -2,6 +2,9 @@
 import { ref } from "vue";
 import StudentCard from "./components/StudentCard.vue";
 import s2aStudents from "./data/s2a";
+import seedrandom from "seedrandom";
+
+const rng = seedrandom(Date.now().toString());
 
 export interface StudentCardInfo {
   id: number;
@@ -24,10 +27,34 @@ const studentCardInfo = ref(
   })) as StudentCardInfo[]
 );
 
-const interval = 100;
+const interval = 75;
 let shuffling = false;
 
 const started = ref(false);
+
+function escape() {
+  const c = studentCardInfo.value.findIndex((s) => s.id === 32);
+  let m = studentCardInfo.value.findIndex((s) => s.id === 15);
+  const v = m > c ? 1 : -1;
+
+  const dist = () => {
+    const mx = m % 7;
+    const my = Math.floor(m / 7);
+    const cx = c % 7;
+    const cy = Math.floor(c / 7);
+    return Math.max(Math.abs(mx - cx), Math.abs(my - cy));
+  };
+
+  while (dist() < 3) {
+    console.debug(m);
+    const d = (m + v + 35) % 35;
+    [studentCardInfo.value[m], studentCardInfo.value[d]] = [
+      studentCardInfo.value[d],
+      studentCardInfo.value[m],
+    ];
+    m = d;
+  }
+}
 
 function shuffleCards() {
   started.value = true;
@@ -37,7 +64,7 @@ function shuffleCards() {
   let randIdx;
 
   while (curIdx > 0) {
-    randIdx = Math.floor(Math.random() * curIdx);
+    randIdx = Math.floor(rng() * curIdx);
     curIdx--;
 
     [studentCardInfo.value[curIdx], studentCardInfo.value[randIdx]] = [
@@ -47,6 +74,8 @@ function shuffleCards() {
   }
 
   shuffling = true;
+
+  escape();
 
   setTimeout(moveCard, 0, 0);
 }
