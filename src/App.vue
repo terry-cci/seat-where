@@ -33,45 +33,76 @@ let shuffling = false;
 const started = ref(false);
 
 function escape() {
-  const c = studentCardInfo.value.findIndex((s) => s.id === 32);
+  let c = studentCardInfo.value.findIndex((s) => s.id === 32);
   let m = studentCardInfo.value.findIndex((s) => s.id === 15);
-  const v = m > c ? 1 : -1;
 
-  const dist = () => {
-    const mx = m % 7;
-    const my = Math.floor(m / 7);
-    const cx = c % 7;
-    const cy = Math.floor(c / 7);
-    return Math.max(Math.abs(mx - cx), Math.abs(my - cy));
+  if (!studentCardInfo.value[c].flipped && !studentCardInfo.value[m].flipped)
+    return;
+
+  if (!studentCardInfo.value[m].flipped) {
+    const k = c;
+    c = m;
+    m = k;
+  }
+
+  const destOptions = studentCardInfo.value
+    .map((card, idx) => ({ idx, card }))
+    .filter((v) => v.card.flipped)
+    .map((v) => v.idx);
+
+  const dist = (a: number, b: number) => {
+    const ax = a % 7;
+    const ay = Math.floor(a / 7);
+    const bx = b % 7;
+    const by = Math.floor(b / 7);
+    return Math.max(Math.abs(ax - bx), Math.abs(ay - by));
   };
 
-  while (dist() < 3) {
-    console.debug(m);
-    const d = (m + v + 35) % 35;
-    [studentCardInfo.value[m], studentCardInfo.value[d]] = [
-      studentCardInfo.value[d],
-      studentCardInfo.value[m],
-    ];
-    m = d;
+  let dest = m;
+  for (let i = 0; i < destOptions.length; i++) {
+    const d = destOptions[i];
+
+    const curDist = dist(d, c);
+    const oldDist = dist(dest, c);
+    if (oldDist >= 3) break;
+    if (curDist > oldDist) dest = d;
   }
+
+  [studentCardInfo.value[m], studentCardInfo.value[dest]] = [
+    studentCardInfo.value[dest],
+    studentCardInfo.value[m],
+  ];
 }
 
 function shuffleCards() {
   started.value = true;
   if (shuffling) return;
 
-  let curIdx = studentCardInfo.value.length;
+  const shuffleArrayIdx = studentCardInfo.value
+    .map((card, idx) => ({ idx, card }))
+    .filter((v) => v.card.flipped)
+    .map((v) => v.idx);
+
+  const shuffleArrayHolder = studentCardInfo.value.filter(
+    (card) => card.flipped
+  );
+
+  let curIdx = shuffleArrayHolder.length;
   let randIdx;
 
   while (curIdx > 0) {
-    randIdx = Math.floor(rng() * curIdx);
     curIdx--;
+    randIdx = Math.floor(rng() * curIdx);
 
-    [studentCardInfo.value[curIdx], studentCardInfo.value[randIdx]] = [
-      studentCardInfo.value[randIdx],
-      studentCardInfo.value[curIdx],
+    [shuffleArrayHolder[curIdx], shuffleArrayHolder[randIdx]] = [
+      shuffleArrayHolder[randIdx],
+      shuffleArrayHolder[curIdx],
     ];
   }
+
+  shuffleArrayHolder.forEach((card, i) => {
+    studentCardInfo.value[shuffleArrayIdx[i]] = card;
+  });
 
   shuffling = true;
 
@@ -102,10 +133,30 @@ const debug = console.debug;
         v-for="(info, idx) in studentCardInfo"
         :key="info.id"
         :info="info"
-        @mouseover="unflip(idx)"
         @click="unflip(idx)"
         v-show="started"
       />
+      <button
+        class="
+          bg-indigo-400
+          absolute
+          -bottom-16
+          left-1/2
+          transform
+          -translate-x-1/2
+          border
+          shadow
+          text-white
+          rounded
+          text-xl
+          px-8
+          py-2
+        "
+        @click="shuffleCards"
+        v-if="started"
+      >
+        轉運
+      </button>
     </div>
     <button
       class="
