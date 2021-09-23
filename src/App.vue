@@ -106,8 +106,6 @@ function shuffleCards() {
 
   shuffling = true;
 
-  escape();
-
   setTimeout(moveCard, 0, 0);
 }
 
