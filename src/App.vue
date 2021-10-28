@@ -4,7 +4,7 @@ import StudentCard from "./components/StudentCard.vue";
 import s2aStudents from "./data/s2a";
 import seedrandom from "seedrandom";
 
-const rng = seedrandom(Date.now().toString());
+const rng = seedrandom(Date.now().toString() + new Date().toLocaleDateString());
 
 export type Pos = {
   row: number;
@@ -85,7 +85,6 @@ function moveCard(idx: number) {
         flipped
     );
     if (targetStudIdx !== -1) {
-      debugger;
       // swap their information excepted card id
       [studentCardInfo.value[idx], studentCardInfo.value[targetStudIdx]] = [
         {
@@ -120,7 +119,12 @@ function unflip(id: number) {
 }
 
 // fixing positions
-const fixedStudents: { id: number; pos: Pos }[] = [];
+const fixedStudents: { id: number; pos: Pos }[] = [
+  {
+    id: 16,
+    pos: { row: Math.floor(rng() * 2) + 1, col: Math.floor(rng() * 7) + 1 },
+  },
+];
 </script>
 
 <template>
