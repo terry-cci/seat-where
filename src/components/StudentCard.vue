@@ -19,12 +19,7 @@ const padding = 2;
     :style="
       isPlaced
         ? {
-            left:
-              padding +
-              (info.pos.col - 1) * 6 +
-              Number(info.pos.col >= 3) * gap +
-              Number(info.pos.col >= 6) * gap +
-              'rem',
+            left: padding + (info.pos.col - 1) * (6 + gap) + 'rem',
             bottom: padding + (info.pos.row - 1) * 3.5 + 'rem',
           }
         : {
