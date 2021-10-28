@@ -6,22 +6,26 @@ import seedrandom from "seedrandom";
 
 const rng = seedrandom(Date.now().toString());
 
+export type Pos = {
+  row: number;
+  col: number;
+};
+
 export interface StudentCardInfo {
+  cardId: number;
   id: number;
   name: {
     zh: string;
     en: string;
   };
-  pos: {
-    row: number;
-    col: number;
-  };
+  pos: Pos;
   flipped: boolean;
 }
 
 const studentCardInfo = ref(
-  s2aStudents.map((student) => ({
+  s2aStudents.map((student, i) => ({
     ...student,
+    cardId: i,
     pos: { row: -1, col: -1 },
     flipped: true,
   })) as StudentCardInfo[]
@@ -31,48 +35,6 @@ const interval = 75;
 let shuffling = false;
 
 const started = ref(false);
-
-function escape() {
-  let c = studentCardInfo.value.findIndex((s) => s.id === 32);
-  let m = studentCardInfo.value.findIndex((s) => s.id === 15);
-
-  if (!studentCardInfo.value[c].flipped && !studentCardInfo.value[m].flipped)
-    return;
-
-  if (!studentCardInfo.value[m].flipped) {
-    const k = c;
-    c = m;
-    m = k;
-  }
-
-  const destOptions = studentCardInfo.value
-    .map((card, idx) => ({ idx, card }))
-    .filter((v) => v.card.flipped)
-    .map((v) => v.idx);
-
-  const dist = (a: number, b: number) => {
-    const ax = a % 7;
-    const ay = Math.floor(a / 7);
-    const bx = b % 7;
-    const by = Math.floor(b / 7);
-    return Math.max(Math.abs(ax - bx), Math.abs(ay - by));
-  };
-
-  let dest = m;
-  for (let i = 0; i < destOptions.length; i++) {
-    const d = destOptions[i];
-
-    const curDist = dist(d, c);
-    const oldDist = dist(dest, c);
-    if (oldDist >= 3) break;
-    if (curDist > oldDist) dest = d;
-  }
-
-  [studentCardInfo.value[m], studentCardInfo.value[dest]] = [
-    studentCardInfo.value[dest],
-    studentCardInfo.value[m],
-  ];
-}
 
 function shuffleCards() {
   started.value = true;
@@ -109,19 +71,56 @@ function shuffleCards() {
   setTimeout(moveCard, 0, 0);
 }
 
-function moveCard(id: number) {
-  studentCardInfo.value[id].pos.row = Math.floor(id / 7) + 1;
-  studentCardInfo.value[id].pos.col = Math.floor(id % 7) + 1;
+function moveCard(idx: number) {
+  // check if the current card belongs to a fixed student
+  const fixedStudent = fixedStudents.find(
+    ({ id }) => id === studentCardInfo.value[idx].id
+  );
+  if (fixedStudent) {
+    // find the destination student
+    const targetStudIdx = studentCardInfo.value.findIndex(
+      ({ pos, flipped }) =>
+        pos.row === fixedStudent.pos.row &&
+        pos.col === fixedStudent.pos.col &&
+        flipped
+    );
+    if (targetStudIdx !== -1) {
+      debugger;
+      // swap their information excepted card id
+      [studentCardInfo.value[idx], studentCardInfo.value[targetStudIdx]] = [
+        {
+          ...studentCardInfo.value[targetStudIdx],
+          pos: studentCardInfo.value[idx].pos,
+          cardId: studentCardInfo.value[idx].cardId,
+        },
+        {
+          ...studentCardInfo.value[idx],
+          pos: studentCardInfo.value[targetStudIdx].pos,
+          cardId: studentCardInfo.value[targetStudIdx].cardId,
+        },
+      ];
+    }
+  }
 
-  if (id + 1 < studentCardInfo.value.length)
-    setTimeout(moveCard, interval, id + 1);
-  else shuffling = false;
+  studentCardInfo.value[idx].pos.row = Math.floor(idx / 7) + 1;
+  studentCardInfo.value[idx].pos.col = Math.floor(idx % 7) + 1;
+
+  if (idx + 1 < studentCardInfo.value.length) {
+    const moved =
+      studentCardInfo.value[idx + 1].pos.row !==
+        Math.floor((idx + 1) / 7) + 1 ||
+      studentCardInfo.value[idx + 1].pos.col !== Math.floor((idx + 1) % 7) + 1;
+
+    setTimeout(moveCard, moved ? interval : 0, idx + 1);
+  } else shuffling = false;
 }
 
 function unflip(id: number) {
   studentCardInfo.value[id].flipped = false;
 }
-const debug = console.debug;
+
+// fixing positions
+const fixedStudents: { id: number; pos: Pos }[] = [];
 </script>
 
 <template>
@@ -129,7 +128,7 @@ const debug = console.debug;
     <div id="board" class="relative bg-white shadow rounded">
       <student-card
         v-for="(info, idx) in studentCardInfo"
-        :key="info.id"
+        :key="info.cardId"
         :info="info"
         @click="unflip(idx)"
         v-show="started"
@@ -183,6 +182,6 @@ const debug = console.debug;
 <style scoped>
 #board {
   height: 21.5rem;
-  width: 48rem;
+  width: 52rem;
 }
 </style>
