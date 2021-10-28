@@ -74,7 +74,8 @@ function shuffleCards() {
 function moveCard(idx: number) {
   // check if the current card belongs to a fixed student
   const fixedStudent = fixedStudents.find(
-    ({ id }) => id === studentCardInfo.value[idx].id
+    ({ id }) =>
+      id === studentCardInfo.value[idx].id && studentCardInfo.value[idx].flipped
   );
   if (fixedStudent) {
     // find the destination student
