@@ -123,7 +123,7 @@ function unflip(id: number) {
 const fixedStudents: { id: number; pos: Pos }[] = [
   {
     id: 16,
-    pos: { row: Math.floor(rng() * 2) + 1, col: Math.floor(rng() * 7) + 1 },
+    pos: { row: 1, col: 2 },
   },
 ];
 </script>
