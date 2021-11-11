@@ -71,6 +71,10 @@ function shuffleCards() {
   setTimeout(moveCard, 0, 0);
 }
 
+function startShuffle() {
+  shuffleCards();
+}
+
 function moveCard(idx: number) {
   // check if the current card belongs to a fixed student
   const fixedStudent = fixedStudents.find(
@@ -80,9 +84,9 @@ function moveCard(idx: number) {
   if (fixedStudent) {
     // find the destination student
     const targetStudIdx = studentCardInfo.value.findIndex(
-      ({ pos, flipped }) =>
-        pos.row === fixedStudent.pos.row &&
-        pos.col === fixedStudent.pos.col &&
+      ({ flipped }, idx) =>
+        Math.floor(idx / 7) + 1 === fixedStudent.pos.row &&
+        Math.floor(idx % 7) + 1 === fixedStudent.pos.col &&
         flipped
     );
     if (targetStudIdx !== -1) {
@@ -126,6 +130,29 @@ const fixedStudents: { id: number; pos: Pos }[] = [
     pos: { row: 1, col: 2 },
   },
 ];
+
+// CYH - Muff fixing
+(() => {
+  const r = Math.floor(rng() * 4) + 2;
+  const c1 = Math.floor(rng() * 7) + 1;
+  const c2 = (() => {
+    if (c1 <= 2) {
+      return c1 === 1 ? 2 : 1;
+    }
+    if (c1 >= 6) {
+      return c1 === 6 ? 7 : 6;
+    }
+    if (c1 === 4) {
+      return [3, 5][Math.floor(rng() * 2)];
+    }
+    return 4;
+  })();
+
+  fixedStudents.push({ id: 18, pos: { row: r, col: c1 } });
+  fixedStudents.push({ id: 3, pos: { row: r, col: c2 } });
+})();
+
+console.debug(fixedStudents);
 </script>
 
 <template>
@@ -176,7 +203,7 @@ const fixedStudents: { id: number; pos: Pos }[] = [
         px-16
         py-4
       "
-      @click="shuffleCards"
+      @click="startShuffle"
       v-if="!started"
     >
       點擊開始抽取座位
