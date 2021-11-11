@@ -187,6 +187,6 @@ const fixedStudents: { id: number; pos: Pos }[] = [
 <style scoped>
 #board {
   height: 21.5rem;
-  width: 52rem;
+  width: 48rem;
 }
 </style>
